@@ -23,7 +23,7 @@ public class DataBaseTest {
 
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			fail("No existe driver para mysql, ¿ Tienes el .JAR ?");
+			fail("No existe driver para mysql, ï¿½ Tienes el .JAR ?");
 		}
 	}
 
@@ -45,7 +45,7 @@ public class DataBaseTest {
 	@Test
 	public void testMaterailDAO() {
 
-		MaterialDAO dao = new MaterialDAO();
+		MaterialDAO dao = MaterialDAO.getInstance();
 		assertNotNull(dao.getAll());
 
 	}
