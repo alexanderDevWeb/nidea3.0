@@ -4,28 +4,11 @@
 
 <h1>BackOffice</h1>
 
-<ol>
-	<c:forEach items="${materiales}" var="material">
-	
-	<c:choose>
-		<c:when test="${material.precio > 6.0  && material.precio <= 25.0}">
-			<li style="color:blue">
-		</c:when>
-		<c:when test="${material.precio > 25.0}">
-			<li style="color:red">
-		</c:when>
-		<c:otherwise>
-			<li>
-		</c:otherwise>
-	</c:choose>	
-		
-		${material.nombre} - ${material.precio} &euro;</li>
-		
-		
-	</c:forEach>
-</ol>
+<h3>Ahora ya no se muestra el listado, debe mostrarse el enlace "Materiales" 
+y esté redirigirá al controlador Materiales, que a su vez cargará 
+materiales.jsp donde se mostrarán los propios materialesen DATATABLE</h3>
 
-
+<a href="backoffice/materiales">Materiales listado backoffice</a>
 
 
 <%@include file="/templates/footer.jsp" %>

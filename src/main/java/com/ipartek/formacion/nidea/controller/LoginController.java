@@ -20,13 +20,15 @@ public class LoginController extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	// private String cont = "";
 	private String view = "";
+
 	private Alert alert = new Alert();
 
 	private static final String USER = "admin";
 	private static final String PASS = "admin";
 
-	private static final int SESSION_EXPIRATION = 60 * 1;
+	private static final int SESSION_EXPIRATION = 60 * 60;
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
@@ -57,7 +59,7 @@ public class LoginController extends HttpServlet {
 
 				// Enviar como atributo la lista de materiales
 				MaterialDAO dao = MaterialDAO.getInstance();
-				request.setAttribute("materiales", dao.getAll());
+				request.setAttribute("materiales", dao.getAll(""));
 
 				// Guardar usuario en session
 				HttpSession session = request.getSession();
@@ -73,7 +75,10 @@ public class LoginController extends HttpServlet {
 
 				view = "backoffice/index.jsp";
 				alert = new Alert("Ongi Etorri", Alert.TIPO_PRIMARY);
+
+				// cont = "materiales";
 			} else {
+				// cont = "login";
 
 				view = "login.jsp";
 				alert = new Alert("Credenciales incorrectas, prueba de nuevo");
@@ -84,9 +89,13 @@ public class LoginController extends HttpServlet {
 			view = "login.jsp";
 			alert = new Alert();
 
+			// cont = "login";
+
 		} finally {
 			request.setAttribute("alert", alert);
 			request.getRequestDispatcher(view).forward(request, response);
+
+			// response.sendRedirect(cont);
 		}
 
 	}
