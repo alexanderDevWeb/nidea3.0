@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import com.ipartek.formacion.nidea.pojo.Material;
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 public class MaterialDAO implements Persistible<Material> {
 
@@ -41,12 +42,14 @@ public class MaterialDAO implements Persistible<Material> {
 	public ArrayList<Material> getAll(String search) {
 
 		ArrayList<Material> lista = new ArrayList<Material>();
-		Connection con = null;
-		PreparedStatement pst = null;
-		ResultSet rs = null;
-		// search = "";
 
-		try {
+		// Necesario para utilizar la función mapper
+		Material m = null;
+
+		String sql = "SELECT id, nombre, precio FROM material WHERE NOMBRE LIKE '%" + search
+				+ "%' ORDER BY ID DESC  LIMIT 500";
+
+		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
 
 			/*
 			 * Esto utilizabamos al usar el DriverManager
@@ -56,45 +59,16 @@ public class MaterialDAO implements Persistible<Material> {
 			 * DriverManager.getConnection(URL);
 			 */
 
-			// Ahora utilizaremos esto, por el pool de conexiones DATASOURCE
-			con = ConnectionManager.getConnection();
-
-			String sql = "SELECT id, nombre, precio FROM material WHERE NOMBRE LIKE '%" + search
-					+ "%' ORDER BY ID DESC  LIMIT 500";
-
-			pst = con.prepareStatement(sql);
-			rs = pst.executeQuery();
-
-			Material m = null;
-			while (rs.next()) {
-				m = new Material();
-				m.setId(rs.getInt("id"));
-				m.setNombre(rs.getString("nombre"));
-				m.setPrecio(rs.getFloat("precio"));
-				lista.add(m);
+			try (ResultSet rs = pst.executeQuery();) {
+				while (rs.next()) {
+					m = mapper(rs);
+					lista.add(m);
+				}
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-
-			try {
-				if (rs != null) {
-					rs.close();
-				}
-
-				if (pst != null) {
-					pst.close();
-				}
-
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
 		}
-
 		return lista;
 	}
 
@@ -104,71 +78,66 @@ public class MaterialDAO implements Persistible<Material> {
 	@Override
 	public Material getById(int id) {
 
-		Connection con = null;
-		PreparedStatement pst = null;
-		ResultSet rs = null;
-		Material m = new Material();
+		Material m = null;
+		String sql = "SELECT id, nombre, precio FROM material WHERE id= ? ;";
 
-		try {
+		// Ahora utilizaremos esto, por el pool de conexiones DATASOURCE
+		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
 
-			// Ahora utilizaremos esto, por el pool de conexiones DATASOURCE
-			con = ConnectionManager.getConnection();
+			pst.setInt(1, id);
 
-			String sql = "SELECT id, nombre, precio FROM material WHERE id=" + id + ";";
+			try (ResultSet rs = pst.executeQuery()) {
+				// Necesario aunque solo sea un valor
+				while (rs.next()) {
+					/*
+					 * m = new Material(); m.setId(rs.getInt("id"));
+					 * m.setNombre(rs.getString("nombre")); m.setPrecio(rs.getFloat("precio"));
+					 */
 
-			pst = con.prepareStatement(sql);
-			rs = pst.executeQuery();
-
-			// Necesario para que coja el primer valor
-			rs.next();
-
-			m.setId(rs.getInt("id"));
-			m.setNombre(rs.getString("nombre"));
-			m.setPrecio(rs.getFloat("precio"));
-
+					// mapper convierte unresultado de la BD a un objeto Material
+					m = mapper(rs);
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
+			// Antes de utilizar los Autoclosables había que cerrar los recursos en el
+			// Ya no es necesario el finally si es solo para esto, podría quitarse
 
-			try {
-				if (rs != null) {
-					rs.close();
-				}
-
-				if (pst != null) {
-					pst.close();
-				}
-
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			/*
+			 * try { if (rs != null) { rs.close(); }
+			 * 
+			 * if (pst != null) { pst.close(); }
+			 * 
+			 * if (con != null) { con.close(); } } catch (SQLException e) {
+			 * e.printStackTrace(); }
+			 */
 		}
-
 		return m;
 	}
 
 	@Override
-	public boolean save(Material pojo) {
+	public boolean save(Material pojo) throws MySQLIntegrityConstraintViolationException {
 		boolean resul = false;
-		Connection con = null;
-		PreparedStatement pst = null;
-		try {
+		String sql = "";
 
-			con = ConnectionManager.getConnection();
+		// Dependiendo de si quiero guardar un registro nuevo o modificar uno
+		// existente, la SQL será distinta
+		if (pojo.getId() == -1) { // Es un nuevo registro
+			sql = "INSERT INTO `material` (`nombre`,`precio`) VALUES(?,?);";
+		} else {
+			sql = "UPDATE `material`  SET `nombre` = ?, `precio`= ? WHERE  `id`= ?;";
+		}
+
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
 			if (pojo.getId() == -1) { // Es un nuevo registro
-				String sql = "INSERT INTO `material` (`nombre`,`precio`) VALUES(?,?);";
-				pst = con.prepareStatement(sql);
 				pst.setString(1, pojo.getNombre());
 				pst.setFloat(2, pojo.getPrecio());
 				System.out.println("Insertando");
 
 			} else { // Es una modificación
-				String sql = "UPDATE `material`  SET `nombre` = ?, `precio`= ? WHERE  `id`= ?;";
-				pst = con.prepareStatement(sql);
 				pst.setString(1, pojo.getNombre());
 				pst.setFloat(2, pojo.getPrecio());
 				pst.setInt(3, pojo.getId());
@@ -181,21 +150,24 @@ public class MaterialDAO implements Persistible<Material> {
 				resul = true;
 			}
 
+			// Recuperar ID generado de forma automática
+			try (ResultSet rs = pst.getGeneratedKeys()) {
+				while (rs.next()) {
+					pojo.setId(rs.getInt(1));
+					System.out.println("Ultimo registro: " + rs.getInt(1));
+				}
+
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+		}
+
+		catch (MySQLIntegrityConstraintViolationException e) {
+			// e.printStackTrace();
+			System.out.println("Primer throws de Unique exception");
+			throw e;
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			try {
-
-				if (pst != null) {
-					pst.close();
-				}
-
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
 		}
 		return resul;
 	}
@@ -203,14 +175,10 @@ public class MaterialDAO implements Persistible<Material> {
 	@Override
 	public boolean delete(int id) {
 		boolean resul = false;
-		Connection con = null;
-		PreparedStatement pst = null;
-		try {
+		String sql = "DELETE FROM `material` WHERE  `id`= ?;";
 
-			con = ConnectionManager.getConnection();
-			String sql = "DELETE FROM `material` WHERE  `id`= ?;";
+		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
 
-			pst = con.prepareStatement(sql);
 			pst.setInt(1, id);
 
 			int affectedRows = pst.executeUpdate();
@@ -221,22 +189,41 @@ public class MaterialDAO implements Persistible<Material> {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			try {
-
-				if (pst != null) {
-					pst.close();
-				}
-
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
 		}
 		return resul;
-
 	}
 
+	@Override
+	public Material mapper(ResultSet rs) throws SQLException {
+		Material m = null;
+		if (rs != null) {
+			m = new Material();
+			m.setId(rs.getInt("id"));
+			m.setNombre(rs.getString("nombre"));
+			m.setPrecio(rs.getFloat("precio"));
+		}
+		return m;
+	}
+
+	// NO HA TERMINADO DE FUNCIONAR DE ESTA FORMA
+	public int lastId() {
+		int resul = -1;
+		String sql = "SELECT LAST_INSERT_ID()";
+
+		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
+
+			try (ResultSet rs = pst.executeQuery()) {
+				while (rs.next()) {
+
+					resul = rs.getInt("id");
+
+					System.out.println(resul);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return resul;
+	}
 }

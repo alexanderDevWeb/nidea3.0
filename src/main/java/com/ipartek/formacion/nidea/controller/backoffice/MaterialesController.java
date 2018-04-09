@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.ipartek.formacion.nidea.model.MaterialDAO;
 import com.ipartek.formacion.nidea.pojo.Alert;
 import com.ipartek.formacion.nidea.pojo.Material;
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 /**
  * Servlet implementation class MaterialesController
@@ -109,11 +110,12 @@ public class MaterialesController extends HttpServlet {
 			throws ServletException, IOException {
 
 		try {
-			// RecogerParámetros
-			recogerParametros(request);
 
 			// Reseteo el valor del alert
 			alert = null;
+
+			// RecogerParámetros
+			recogerParametros(request);
 
 			switch (op) {
 			case OP_MOSTRAR_FORMULARIO: // Ver el detalle
@@ -176,27 +178,33 @@ public class MaterialesController extends HttpServlet {
 	 */
 	private void recogerParametros(HttpServletRequest request) {
 		// TODO Auto-generated method stub
-		System.out.println("Boton pulsado: " + request.getParameter("op"));
+		System.out.println("Opción: " + request.getParameter("op"));
 		if (request.getParameter("op") != null) {
 			op = Integer.parseInt(request.getParameter("op"));
 		} else {
 			op = 0;
 		}
 
-		search = (request.getParameter("search") != null) ? request.getParameter("search") : "";
+		search = (request.getParameter("search") != null) ? request.getParameter("search").trim() : "";
 
 		if (request.getParameter("id") != null) {
 			id = Integer.parseInt(request.getParameter("id"));
 		} else {
 			id = -1;
 		}
-
-		if (request.getParameter("nombre") != null) {
-			nombre = request.getParameter("nombre");
+		System.out.println(request.getParameter("nombre"));
+		if (request.getParameter("nombre") != null && request.getParameter("nombre") != "") {
+			nombre = request.getParameter("nombre").trim();
+		} else { // no ha introducido nombre
+			nombre = "";
+			// alert = new Alert("No ha introducido un nombre", Alert.TIPO_DANGER);
+			// this.op = OP_MOSTRAR_FORMULARIO;
 		}
 
-		if (request.getParameter("precio") != null) {
+		if (request.getParameter("precio") != null && request.getParameter("precio") != "") {
 			precio = Float.parseFloat(request.getParameter("precio"));
+		} else {
+			precio = 0.00f;
 		}
 
 	}
@@ -207,6 +215,7 @@ public class MaterialesController extends HttpServlet {
 		// Configuro los atributos
 		request.setAttribute("materiales", dao.getAll(""));
 		request.setAttribute("search", search);
+		request.setAttribute("alert", alert);
 		dispatcher = request.getRequestDispatcher(VIEW_INDEX);
 
 	}
@@ -229,13 +238,32 @@ public class MaterialesController extends HttpServlet {
 			mat.setId(this.id);
 		}
 
-		if (dao.save(mat)) {
-			alert = new Alert("Material Guardado con id: " + id, Alert.TIPO_PRIMARY);
-		} else {
-			alert = new Alert("Error Guardando, sentimos las molestias ", Alert.TIPO_WARNING);
-		}
+		if (mat.getNombre() != "" && mat.getPrecio() >= 0) {
+			try {
+				if (dao.save(mat)) { // He modificado el objeto por referencia en el save(mat)
+					alert = new Alert("Material Guardado con id: " + mat.getId(), Alert.TIPO_PRIMARY);
+				} else {
+					alert = new Alert("Error Guardando, sentimos las molestias ", Alert.TIPO_WARNING);
+				}
+			} catch (MySQLIntegrityConstraintViolationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				alert = new Alert("Error Guardando, EL MATERIAL YA EXISTE ", Alert.TIPO_DANGER);
+			}
 
-		this.listar(request);
+			this.listar(request);
+
+		} else {
+
+			if (mat.getNombre() == "") {
+				alert = new Alert("No ha introducido un nombre", Alert.TIPO_DANGER);
+			} else if (mat.getPrecio() < 0) {
+				alert = new Alert("El precio debe ser positivo", Alert.TIPO_DANGER);
+			}
+
+			request.setAttribute("material", mat);
+			dispatcher = request.getRequestDispatcher(VIEW_FORM);
+		}
 
 	}
 
@@ -275,6 +303,7 @@ public class MaterialesController extends HttpServlet {
 
 		// Hago la consulta del material seleccionado mediante su id
 		Material mat = new Material();
+
 		if (this.id != -1) {
 			mat = dao.getById(this.id);
 			// Configuro al alerta

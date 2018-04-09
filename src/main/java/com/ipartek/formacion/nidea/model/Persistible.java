@@ -1,6 +1,10 @@
 package com.ipartek.formacion.nidea.model;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 public interface Persistible<P> {
 
@@ -27,8 +31,9 @@ public interface Persistible<P> {
 	 * 
 	 * @param pojo
 	 * @return
+	 * @throws MySQLIntegrityConstraintViolationException
 	 */
-	public boolean save(P pojo);
+	public boolean save(P pojo) throws MySQLIntegrityConstraintViolationException;
 
 	/**
 	 * Eliminamos un registro por su identificador
@@ -37,4 +42,14 @@ public interface Persistible<P> {
 	 * @return
 	 */
 	public boolean delete(int id);
+
+	/**
+	 * Nos mapea un Resutlado de la BD a un Pojo
+	 * 
+	 * @param rs
+	 *            ResultSet 1 Registro de la consulta
+	 * @return Pojo con los valores del ResultSet o null si no hay valores
+	 * @throws SQLException
+	 */
+	public P mapper(ResultSet rs) throws SQLException;
 }

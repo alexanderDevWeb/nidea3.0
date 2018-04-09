@@ -47,10 +47,15 @@
          </c:when>
          <c:otherwise>
          	<button class="btn btn-lg btn-warning btn-block" name="op" value="4" type="submit">Modificar</button>
-         	<button class="btn btn-lg btn-danger btn-block" name="op" value="3" type="submit">Eliminar</button>
+         	<button id="del" class="btn btn-lg btn-danger btn-block" name="op" value="3" type="submit">Eliminar</button>
          </c:otherwise>      
      </c:choose>      
     </form>
 </div>
 
 <%@include file="/templates/footer.jsp" %>
+<script>
+	$("#del").click(function(){
+		if(!confirm("Está seguro????????")) event.preventDefault();
+	})
+</script>
