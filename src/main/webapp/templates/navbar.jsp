@@ -14,6 +14,7 @@
       </nav>
       
       <nav style="margin-left: auto">
+      <a class="btn btn-outline-success" href="login-user">Login User</a>   
       <c:if test="${empty usuario}">         
       	<a class="btn btn-outline-primary" href="login">Login</a>      	
       </c:if>

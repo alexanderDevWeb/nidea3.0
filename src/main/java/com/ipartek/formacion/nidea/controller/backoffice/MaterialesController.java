@@ -137,6 +137,7 @@ public class MaterialesController extends HttpServlet {
 
 		} catch (Exception e) {
 			// TODO: handle exception
+			e.printStackTrace();
 		} finally {
 			request.setAttribute("alert", alert);
 			dispatcher.forward(request, response);
@@ -201,11 +202,12 @@ public class MaterialesController extends HttpServlet {
 			// this.op = OP_MOSTRAR_FORMULARIO;
 		}
 
-		if (request.getParameter("precio") != null && request.getParameter("precio") != "") {
-			precio = Float.parseFloat(request.getParameter("precio"));
-		} else {
-			precio = 0.00f;
-		}
+		/*
+		 * Se hace en guardar para manejar la excepción if
+		 * (request.getParameter("precio") != null && request.getParameter("precio") !=
+		 * "") { precio = Float.parseFloat(request.getParameter("precio")); } else {
+		 * precio = 0.00f; }
+		 */
 
 	}
 
@@ -226,42 +228,63 @@ public class MaterialesController extends HttpServlet {
 		Material mat = new Material();
 		mat.setId(this.id);
 		mat.setNombre(this.nombre);
-		mat.setPrecio(this.precio);
 
-		if (this.id == -1) {
-			// Configuro al alerta
-			alert = new Alert("Creación de un nuevo material", Alert.TIPO_PRIMARY);
+		// Implementar try and catch
+		try {
+			if (request.getParameter("precio") != null && request.getParameter("precio") != "") {
+				precio = Float.parseFloat(request.getParameter("precio"));
+				mat.setPrecio(this.precio);
+			} else {
+				precio = 0.00f;
+			}
 
-		} else {
-			// Configuro al alerta
-			alert = new Alert("Modificando el material con id: " + this.id, Alert.TIPO_WARNING);
-			mat.setId(this.id);
-		}
+			if (this.id == -1) {
+				// Configuro al alerta
+				alert = new Alert("Creación de un nuevo material", Alert.TIPO_PRIMARY);
 
-		if (mat.getNombre() != "" && mat.getPrecio() >= 0) {
-			try {
-				if (dao.save(mat)) { // He modificado el objeto por referencia en el save(mat)
-					alert = new Alert("Material Guardado con id: " + mat.getId(), Alert.TIPO_PRIMARY);
-				} else {
-					alert = new Alert("Error Guardando, sentimos las molestias ", Alert.TIPO_WARNING);
+			} else {
+				// Configuro al alerta
+				alert = new Alert("Modificando el material con id: " + this.id, Alert.TIPO_WARNING);
+				mat.setId(this.id);
+			}
+
+			if (mat.getNombre() != "" && mat.getPrecio() >= 0) {
+				try {
+					if (dao.save(mat)) { // He modificado el objeto por referencia en el save(mat)
+						alert = new Alert("Material Guardado con id: " + mat.getId(), Alert.TIPO_PRIMARY);
+					} else {
+						alert = new Alert("Error Guardando, sentimos las molestias ", Alert.TIPO_WARNING);
+					}
+				} catch (MySQLIntegrityConstraintViolationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					alert = new Alert("Error Guardando, EL MATERIAL YA EXISTE ", Alert.TIPO_DANGER);
 				}
-			} catch (MySQLIntegrityConstraintViolationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				alert = new Alert("Error Guardando, EL MATERIAL YA EXISTE ", Alert.TIPO_DANGER);
+
+				// this.listar(request);
+				request.setAttribute("material", mat);
+				dispatcher = request.getRequestDispatcher(VIEW_FORM);
+
+			} else {
+
+				if (mat.getNombre() == "") {
+					alert = new Alert("No ha introducido un nombre", Alert.TIPO_DANGER);
+				} else if (mat.getPrecio() < 0) {
+					alert = new Alert("El precio debe ser positivo", Alert.TIPO_DANGER);
+				}
+
+				request.setAttribute("material", mat);
+				dispatcher = request.getRequestDispatcher(VIEW_FORM);
 			}
-
-			this.listar(request);
-
-		} else {
-
-			if (mat.getNombre() == "") {
-				alert = new Alert("No ha introducido un nombre", Alert.TIPO_DANGER);
-			} else if (mat.getPrecio() < 0) {
-				alert = new Alert("El precio debe ser positivo", Alert.TIPO_DANGER);
-			}
-
+		} catch (NumberFormatException n) {
+			System.out.println("Precio no FLOAT");
+			// Hay que devolver el material para que la vista no quede vacía
 			request.setAttribute("material", mat);
+
+			// Configuro la nueva alerta
+			alert = new Alert("El precio ha de ser en formato numérico", Alert.TIPO_DANGER);
+
+			// Configuro la vista a cargar
 			dispatcher = request.getRequestDispatcher(VIEW_FORM);
 		}
 

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import com.ipartek.formacion.nidea.pojo.Material;
+import com.ipartek.nidea.util.Utilidades;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 public class MaterialDAO implements Persistible<Material> {
@@ -25,7 +26,6 @@ public class MaterialDAO implements Persistible<Material> {
 		}
 	}
 
-	// Creador synchronized para protegerse de posibles problemas multihilo
 	public static MaterialDAO getInstance() {
 		if (INSTANCE == null) {
 			createInstance();
@@ -46,8 +46,7 @@ public class MaterialDAO implements Persistible<Material> {
 		// Necesario para utilizar la función mapper
 		Material m = null;
 
-		String sql = "SELECT id, nombre, precio FROM material WHERE NOMBRE LIKE '%" + search
-				+ "%' ORDER BY ID DESC  LIMIT 500";
+		String sql = "SELECT id, nombre, precio FROM material WHERE NOMBRE LIKE ? ORDER BY ID DESC  LIMIT 500";
 
 		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
 
@@ -59,6 +58,7 @@ public class MaterialDAO implements Persistible<Material> {
 			 * DriverManager.getConnection(URL);
 			 */
 
+			pst.setString(1, "%" + search + "%");
 			try (ResultSet rs = pst.executeQuery();) {
 				while (rs.next()) {
 					m = mapper(rs);
@@ -120,6 +120,9 @@ public class MaterialDAO implements Persistible<Material> {
 	public boolean save(Material pojo) throws MySQLIntegrityConstraintViolationException {
 		boolean resul = false;
 		String sql = "";
+
+		// Formateo el nombre para quitarle los espacios
+		pojo.setNombre(Utilidades.limpiarEspacios(pojo.getNombre()));
 
 		// Dependiendo de si quiero guardar un registro nuevo o modificar uno
 		// existente, la SQL será distinta

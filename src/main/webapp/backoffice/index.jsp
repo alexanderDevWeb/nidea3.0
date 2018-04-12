@@ -2,13 +2,31 @@
 <%@include file="/templates/navbar.jsp" %>
 <%@include file="/templates/alert.jsp" %>
 
+${applicationScope.usuarios_conectados}
+
 <h1>BackOffice</h1>
 
-<h3>Ahora ya no se muestra el listado, debe mostrarse el enlace "Materiales" 
-y esté redirigirá al controlador Materiales, que a su vez cargará 
-materiales.jsp donde se mostrarán los propios materialesen DATATABLE</h3>
 
 <a href="backoffice/materiales">Materiales listado backoffice</a>
+
+<table id="tabla" class="display text-center">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>            
+        </tr>
+    </thead>
+    <tbody>
+    <c:forEach items="${usuarios_conectados}" var="usuario">>
+        <tr>
+             <td>${usuario.key}</td>
+            <td>${usuario.getValue()}</td>
+        </tr>
+    </c:forEach>
+    </tbody>
+    
+</table>
+
 
 
 <%@include file="/templates/footer.jsp" %>
