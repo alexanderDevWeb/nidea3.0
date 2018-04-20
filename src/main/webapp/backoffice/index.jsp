@@ -4,10 +4,9 @@
 
 ${applicationScope.usuarios_conectados}
 
-<h1>BackOffice</h1>
+<a class="text-center" style="display:block" href="backoffice/materiales">Materiales listado backoffice</a>
 
-
-<a href="backoffice/materiales">Materiales listado backoffice</a>
+<h1 class="text-center">LISTADO DE CONEXIONES</h1>
 
 <table id="tabla" class="display text-center">
     <thead>
@@ -20,7 +19,8 @@ ${applicationScope.usuarios_conectados}
     <c:forEach items="${usuarios_conectados}" var="usuario">>
         <tr>
              <td>${usuario.key}</td>
-            <td>${usuario.getValue()}</td>
+<%--             <td>${usuario.getValue().getNombre()}</td> --%>
+            <td>${usuario.getValue().getNombre()}</td>
         </tr>
     </c:forEach>
     </tbody>

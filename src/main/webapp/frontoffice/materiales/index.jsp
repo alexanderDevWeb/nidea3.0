@@ -1,16 +1,17 @@
 
+<%@page import="com.ipartek.formacion.nidea.controller.MaterialesUserController"%>
 <%@page import="com.ipartek.formacion.nidea.controller.backoffice.MaterialesController"%>
 <%@include file="/templates/head.jsp" %>
 <%@include file="/templates/navbar.jsp" %>
 <%@include file="/templates/alert.jsp" %>
 
 
-<h1 class="text-center">MATERIALES LISTADO <a href="backoffice/materiales?op=<%=MaterialesController.OP_MOSTRAR_FORMULARIO%>"><i class="fa fa-plus-circle text-success" aria-hidden="true"></i></a></h1>
-
+<h1 class="text-center">MATERIALES ${usuario.nombre.toUpperCase()} <a href="frontoffice/materiales?op=<%=MaterialesController.OP_MOSTRAR_FORMULARIO%>"><i class="fa fa-plus-circle text-success" aria-hidden="true"></i></a></h1>
+<%-- ${usuario} --%>
 <hr>
 <div class="text-center">
 <strong>Buscador</strong>
-<form action="backoffice/materiales" method="get">
+<form action="frontoffice/materiales" method="get">
 <input type="hidden" name="op" value="<%=MaterialesController.OP_BUSQUEDA%>">
 <input type="search" name="search" value="${search}"required placeholder="Nombre del material">
 <input type="submit" value="Buscar">
@@ -22,8 +23,7 @@
         <tr>
             <th>ID</th>
             <th>Nombre</th>
-            <th>Precio</th>
-            <th>Nombre User</th>
+            <th>Precio</th>            
         </tr>
     </thead>
     <tbody>
@@ -31,12 +31,11 @@
         <tr>
             <td>${material.id}</td>
             <td>
-            <a href="backoffice/materiales?id=${material.id}&op=<%=MaterialesController.OP_MOSTRAR_FORMULARIO%>">
+            <a href="frontoffice/materiales?id=${material.id}&op=<%=MaterialesUserController.OP_MOSTRAR_FORMULARIO%>">
             ${material.nombre}
             </a>
             </td>
-            <td>${material.precio}</td>
-            <td>${material.user.nombre}</td>
+            <td>${material.precio}</td>            
         </tr>
     </c:forEach>
     </tbody>

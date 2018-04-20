@@ -3,14 +3,15 @@ package com.ipartek.formacion.nidea.controller;
 import java.io.IOException;
 import java.util.HashMap;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.ipartek.formacion.nidea.pojo.Alert;
+import com.ipartek.formacion.nidea.pojo.Usuario;
 
 /**
  * Servlet implementation class LoginController
@@ -58,11 +59,25 @@ public class LoginUserController extends HttpServlet {
 			// System.out.println(id);
 			// System.out.println(nombre);
 
-			// Añado el nuevo usuario al hashmap
-			usuariosMap.put(id, nombre);
+			// Creo un objeto Usuario con los valores
+			// del usuario logueado
+			Usuario user = new Usuario();
+			user.setId(id);
+			user.setNombre(nombre);
 
-			ServletContext context = request.getServletContext();
-			context.setAttribute("usuarios_conectados", usuariosMap);
+			// Guardar usuario en session
+			HttpSession session = request.getSession();
+			session.setMaxInactiveInterval(1);
+			session.setAttribute("uPublic", user);
+
+			// Comento el siguiente codigo porque utilizaremos un listener
+			/*
+			 * // Añado el nuevo usuario al hashmap
+			 * usuariosMap.put(id, nombre);
+			 * // Guardo el hashmap a nivel de aplicacion
+			 * ServletContext context = request.getServletContext();
+			 * context.setAttribute("usuarios_conectados", usuariosMap);
+			 */
 
 			// Voy a lista de materiales para los usuarios
 			view = "views/materiales/index.jsp";

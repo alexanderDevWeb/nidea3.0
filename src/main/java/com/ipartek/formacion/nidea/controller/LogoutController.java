@@ -25,7 +25,7 @@ public class LogoutController extends HttpServlet {
 			throws ServletException, IOException {
 		// Guardar usuario en session
 		HttpSession session = request.getSession();
-		session.setAttribute("usuario", null);
+		// session.setAttribute("usuario", null);
 		session.invalidate();
 
 		// Redirir al login

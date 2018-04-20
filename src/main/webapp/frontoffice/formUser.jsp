@@ -2,7 +2,7 @@
 <%@include file="/templates/navbar.jsp" %>
 <%@include file="/templates/alert.jsp" %>
 
-<h1  class="text-center">FORM CRUD</h1>
+<h1  class="text-center">FORM USER CRUD</h1>
 
 <%-- <h3  class="text-center">Opción: ${op}</h3> --%>
 
@@ -11,7 +11,7 @@
 
 <div id="formCRUD" class="mb-3">
 
-  <form class="form-signin" action="backoffice/materiales" method="post">     
+  <form class="form-signin" action="frontoffice/materiales" method="post">     
 
       <div class="form-label-group">
       <label for="usuario">Id</label>
@@ -45,13 +45,7 @@
                value="${material.precio}">
       </div>
       
-    <label for="password">Usuario</label>
-	<select name="idUsuario"  class="form-control">	
-	<c:forEach items="${usuarios}" var="usuario">      
-		<option value="${usuario.id}" ${usuario.id == material.user.id? "selected" :"" }>${usuario.nombre}</option>	
-	</c:forEach>
-	</select>
-	      
+    	      
       <br>
      
      <c:choose>        

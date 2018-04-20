@@ -6,6 +6,11 @@
 	// varias sentencias 
 	String nombre = "pepe";
 	String hora = "10:78";
+	
+	// Fuerza unerror NullPointerException
+	// Mostrará error.jsp configurado en web.xml	
+	String nulo = null;
+	//nulo.length();
 
 %>
 

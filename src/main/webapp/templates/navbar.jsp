@@ -14,13 +14,26 @@
       </nav>
       
       <nav style="margin-left: auto">
-      <a class="btn btn-outline-success" href="login-user">Login User</a>   
+      <c:if test="${empty usuario}">    
+      <a class="btn btn-outline-success" href="login-user">Login User</a>
+      </c:if>
       <c:if test="${empty usuario}">         
       	<a class="btn btn-outline-primary" href="login">Login</a>      	
       </c:if>
-      <c:if test="${!empty usuario}">
+     
+
+      <c:if test="${!empty usuario && usuario.rol.id == 1}">
       <a class="p-2 text-dark" href="backoffice/materiales?op=0">Materiales</a>
-      <a href="#" class="badge badge-success">${usuario} </a>
+      <a class="p-2 text-dark" href="backoffice/roles?op=0">Roles</a>      
+      </c:if>
+      
+       <c:if test="${!empty usuario && usuario.rol.id == 2}">
+      <a class="p-2 text-dark" href="frontoffice/materiales">Mis Materiales</a>
+            
+      </c:if>
+      
+      <c:if test="${!empty usuario}">      
+      <span class="badge badge-success">${usuario.nombre} </span>
       <a class="btn btn-outline-danger" href="logout">Logout</a>           
       </c:if>
       </nav>

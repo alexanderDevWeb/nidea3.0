@@ -1,9 +1,8 @@
 package com.ipartek.formacion.nidea.controller;
 
 import java.io.IOException;
-import java.util.HashMap;
 
-import javax.servlet.ServletContext;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -11,8 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.ipartek.formacion.nidea.model.MaterialDAO;
+import com.ipartek.formacion.nidea.model.UsuarioDAO;
 import com.ipartek.formacion.nidea.pojo.Alert;
+import com.ipartek.formacion.nidea.pojo.Usuario;
 
 /**
  * Servlet implementation class LoginController
@@ -27,10 +27,42 @@ public class LoginController extends HttpServlet {
 
 	private Alert alert = new Alert();
 
-	private static final String USER = "admin";
-	private static final String PASS = "admin";
+	// Se utilizaban al principio al hardcodear el login
+	// private static final String USER = "admin";
+	// private static final String PASS = "admin";
+
+	private static final String BACKOFFICE = "backoffice/index.jsp";
+	private static final String FRONTOFFICE = "views/materiales/index.jsp";
+	private static final String LOGIN = "login.jsp";
 
 	private static final int SESSION_EXPIRATION = 60 * 60;
+
+	// Creamos el atributo UsuarioDAO y el método init()
+	// para que solo se cree el dao en la primera llamada al servlet,
+	// no cada vez que se llamaba al doGet, así quedará creado
+	private UsuarioDAO daoUser;
+
+	// Creamos el atributo MaterialDAO y el método init()
+	// para que solo se cree el dao en la primera llamada al servlet,
+	// no cada vez que se llamaba al doGet, así quedará creado
+	// private MaterialDAO daoMaterial;
+
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+
+		super.init(config);
+		daoUser = UsuarioDAO.getInstance();
+		// daoMaterial = MaterialDAO.getInstance();
+	}
+
+	// Se ejecuta cuando paramos el servidor de aplicaciones
+	@Override
+	public void destroy() {
+
+		super.destroy();
+		daoUser = null;
+		// daoMaterial = null;
+	}
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
@@ -54,60 +86,51 @@ public class LoginController extends HttpServlet {
 
 		try {
 
+			// Recojo los parámetros envíados desde el login
 			String usuario = request.getParameter("usuario");
 			String password = request.getParameter("password");
 
-			if (USER.equalsIgnoreCase(usuario) && PASS.equals(password)) {
+			// Consulto si existe el usuario introducido
+			Usuario user = daoUser.check(usuario, password);
 
-				// Enviar como atributo la lista de materiales
-				MaterialDAO dao = MaterialDAO.getInstance();
-				request.setAttribute("materiales", dao.getAll(""));
-
+			if (user != null) { // Si existe el user compruebo el rol para redirigirle
 				// Guardar usuario en session
 				HttpSession session = request.getSession();
-				session.setAttribute("usuario", usuario);
-
-				// Tiempo de expiración de sesión, también se puede configurar en web.xml
-				// Un valor negativo indica que nunca expira
-				// <session-config>
-				// <session-timeout>-1</session-timeout>
-				// </session-config>
-				// @see
+				session.setAttribute("usuario", user);
 				session.setMaxInactiveInterval(SESSION_EXPIRATION);
-
-				view = "backoffice/index.jsp";
-				alert = new Alert("Ongi Etorri", Alert.TIPO_PRIMARY);
 
 				// Recojo todos los usuarios en contexto de palicación
 				// desde que se enciende el servidor hasta que se apaga
-				ServletContext context = request.getServletContext();
-				HashMap<Integer, String> usuariosMap = (HashMap<Integer, String>) context
-						.getAttribute("usuarios_conectados");
+				// ServletContext context = request.getServletContext();
+				// HashMap<Integer, String> usuariosMap = (HashMap<Integer, String>) context
+				// .getAttribute("usuarios_conectados");
 
-				request.setAttribute("usuarios_conectados", usuariosMap);
+				// request.setAttribute("usuarios_conectados", usuariosMap);
 
-				// cont = "materiales";
+				if (user.getRol().getId() == 1) { // Si es admin le envio al backoffice
+
+					view = BACKOFFICE;
+					alert = new Alert("Ongi Etorri Administrador!", Alert.TIPO_PRIMARY);
+
+				} else if (user.getRol().getId() == 2) { // Si es user normal
+					// Voy a lista de materiales para los usuarios
+					view = FRONTOFFICE;
+					alert = new Alert("Ongi Etorri Usuario!", Alert.TIPO_PRIMARY);
+				}
 			} else {
-				// cont = "login";
 
-				view = "login.jsp";
+				view = LOGIN;
 				alert = new Alert("Credenciales incorrectas, prueba de nuevo");
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			view = "login.jsp";
+			view = LOGIN;
 			alert = new Alert();
-
-			// cont = "login";
 
 		} finally {
 			request.setAttribute("alert", alert);
 			request.getRequestDispatcher(view).forward(request, response);
-
-			// response.sendRedirect(cont);
 		}
-
 	}
-
 }

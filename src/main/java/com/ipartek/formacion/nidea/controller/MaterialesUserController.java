@@ -1,4 +1,4 @@
-package com.ipartek.formacion.nidea.controller.backoffice;
+package com.ipartek.formacion.nidea.controller;
 
 import java.io.IOException;
 
@@ -18,16 +18,15 @@ import com.ipartek.formacion.nidea.pojo.Usuario;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 /**
- * Servlet implementation class MaterialesController
+ * Servlet implementation class MaterialesUserController
  */
-@WebServlet("/backoffice/materiales")
-public class MaterialesController extends HttpServlet {
-
+@WebServlet("/frontoffice/materiales")
+public class MaterialesUserController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	// Definimos las vistas a las que puede ir
-	private static final String VIEW_INDEX = "/backoffice/materiales/index.jsp";
-	private static final String VIEW_FORM = "/backoffice/form.jsp";
+	private static final String VIEW_INDEX = "/frontoffice/materiales/index.jsp";
+	private static final String VIEW_FORM = "/frontoffice/formUser.jsp";
 
 	public static final int OP_MOSTRAR_FORMULARIO = 1;
 	public static final int OP_BUSQUEDA = 2;
@@ -37,11 +36,8 @@ public class MaterialesController extends HttpServlet {
 	private RequestDispatcher dispatcher;
 	private Alert alert;
 
-	// Creamos el atributo MaterialDAO y el método init()
-	// para que solo se cree el dao en la primera llamada al servlet,
-	// no cada vez que se llamaba al doGet, así quedará creado
+	// DAOs para operaciones en la BD
 	private MaterialDAO daoMaterial;
-
 	private UsuarioDAO daoUsuario;
 
 	// parametros comunes
@@ -83,25 +79,20 @@ public class MaterialesController extends HttpServlet {
 	}
 
 	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
-	 *      response)
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-
 		doProcess(request, response);
-
 	}
 
 	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
-	 *      response)
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-
 		doProcess(request, response);
 	}
 
@@ -149,33 +140,6 @@ public class MaterialesController extends HttpServlet {
 			request.setAttribute("alert", alert);
 			dispatcher.forward(request, response);
 		}
-		/*
-		 * String view = ""; Material mat = new Material();
-		 * 
-		 * String search = request.getParameter("search"); // Si llega a null hay que
-		 * cambiar a "" para que la consulta no pegue error en // MaterialDAO ->
-		 * getAll() if (search == null) { search = ""; }
-		 * 
-		 * String op = request.getParameter("op"); System.out.println("OP: " + op);
-		 * 
-		 * if (op != null) { view = VIEW_FORM; request.setAttribute("op", op);
-		 * 
-		 * // Dependiendo de la opción, debo hacer una operación u otra switch (op) { //
-		 * Crear un nuevo material case "1": request.setAttribute("material", mat);
-		 * break; // Modificar material case "2": break; // Eliminar material case "3":
-		 * break; }
-		 * 
-		 * } else { view = VIEW_INDEX;
-		 * 
-		 * // Configuro los atributos request.setAttribute("materiales",
-		 * dao.getAll(search)); request.setAttribute("search", search); }
-		 * 
-		 * System.out.println(search);
-		 * 
-		 * // Nos llaman a traves de un enlace, peticion GET // Envío a la vista
-		 * correspondiente (formulario o materiales)
-		 * request.getRequestDispatcher(view).forward(request, response);
-		 */
 
 	}
 
@@ -185,7 +149,7 @@ public class MaterialesController extends HttpServlet {
 	 * @param request
 	 */
 	private void recogerParametros(HttpServletRequest request) {
-		// TODO Auto-generated method stub
+
 		System.out.println("Opción: " + request.getParameter("op"));
 		if (request.getParameter("op") != null) {
 			op = Integer.parseInt(request.getParameter("op"));
@@ -210,27 +174,18 @@ public class MaterialesController extends HttpServlet {
 			// this.op = OP_MOSTRAR_FORMULARIO;
 		}
 
-		System.out.println("User: " + request.getParameter("idUsuario"));
-		user = new Usuario();
-		if (request.getParameter("idUsuario") != null) {
-			// user = Integer.parseInt(request.getParameter("idUsuario"));
-			user = daoUsuario.getById(Integer.parseInt(request.getParameter("idUsuario")));
-
-		}
-		/*
-		 * Se hace en guardar para manejar la excepción if
-		 * (request.getParameter("precio") != null && request.getParameter("precio") !=
-		 * "") { precio = Float.parseFloat(request.getParameter("precio")); } else {
-		 * precio = 0.00f; }
-		 */
+		// El usuario aguardar es siempre el usuario de la sesión
+		Usuario userSession = (Usuario) request.getSession().getAttribute("usuario");
+		user = userSession;
 
 	}
 
-	// ok
 	private void listar(HttpServletRequest request) {
 
+		Usuario userSession = (Usuario) request.getSession().getAttribute("usuario");
+
 		// Configuro los atributos
-		request.setAttribute("materiales", daoMaterial.getAll(""));
+		request.setAttribute("materiales", daoMaterial.getAllByUser("", userSession));
 		request.setAttribute("search", search);
 		request.setAttribute("alert", alert);
 		dispatcher = request.getRequestDispatcher(VIEW_INDEX);
@@ -279,9 +234,7 @@ public class MaterialesController extends HttpServlet {
 					alert = new Alert("Error Guardando, EL MATERIAL YA EXISTE ", Alert.TIPO_DANGER);
 				}
 
-				// this.listar(request);
 				request.setAttribute("material", mat);
-				request.setAttribute("usuarios", daoUsuario.getAll(""));
 				dispatcher = request.getRequestDispatcher(VIEW_FORM);
 
 			} else {
@@ -292,7 +245,6 @@ public class MaterialesController extends HttpServlet {
 					alert = new Alert("El precio debe ser positivo", Alert.TIPO_DANGER);
 				}
 
-				request.setAttribute("usuarios", daoUsuario.getAll(""));
 				request.setAttribute("material", mat);
 				dispatcher = request.getRequestDispatcher(VIEW_FORM);
 			}
@@ -356,7 +308,6 @@ public class MaterialesController extends HttpServlet {
 			alert = new Alert("Creando nuevo material", Alert.TIPO_PRIMARY);
 		}
 
-		request.setAttribute("usuarios", daoUsuario.getAll(""));
 		request.setAttribute("material", mat);
 
 		// Preparo el dispatcher para el forward

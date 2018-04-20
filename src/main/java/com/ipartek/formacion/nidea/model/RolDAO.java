@@ -6,31 +6,27 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import com.ipartek.formacion.nidea.pojo.Material;
-import com.ipartek.formacion.nidea.pojo.Usuario;
+import com.ipartek.formacion.nidea.pojo.Rol;
 import com.ipartek.nidea.util.Utilidades;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
-public class MaterialDAO implements Persistible<Material> {
+public class RolDAO implements Persistible<Rol> {
 
-	private static MaterialDAO INSTANCE = null;
-
-	// Lo necesito en el mapper para crear objetos Usuario
-	private UsuarioDAO daoUsuario;
+	private static RolDAO INSTANCE = null;
 
 	// Private constructor para que no sepueda hacer new y crear N instancias
-	private MaterialDAO() {
+	private RolDAO() {
 	}
 
 	// creador sincronizado para protegerse de posibles problemas multi-hilo
 	// otra prueba para evitar instanciación múltiple
 	private synchronized static void createInstance() {
 		if (INSTANCE == null) {
-			INSTANCE = new MaterialDAO();
+			INSTANCE = new RolDAO();
 		}
 	}
 
-	public static MaterialDAO getInstance() {
+	public static RolDAO getInstance() {
 		if (INSTANCE == null) {
 			createInstance();
 		}
@@ -43,68 +39,22 @@ public class MaterialDAO implements Persistible<Material> {
 	 * @return ArrayList<Material> si no existen registros new ArrayList<Material>()
 	 */
 	@Override
-	public ArrayList<Material> getAll(String search) {
+	public ArrayList<Rol> getAll(String search) {
 
-		ArrayList<Material> lista = new ArrayList<Material>();
+		ArrayList<Rol> lista = new ArrayList<Rol>();
 
 		// Necesario para utilizar la función mapper
-		Material m = null;
+		Rol rol = null;
 
-		String sql = "SELECT m.id, m.nombre, m.precio, m.id_usuario, u.nombre as nombre_usuario ";
-		sql += "FROM material m, usuario u WHERE u.id = m.id_usuario ";
-		sql += "AND m.nombre LIKE ? ORDER BY ID DESC  LIMIT 500";
+		String sql = "SELECT id, nombre FROM rol WHERE NOMBRE LIKE ? ORDER BY nombre LIMIT 500";
 
 		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
-
-			/*
-			 * Esto utilizabamos al usar el DriverManager
-			 * 
-			 * Class.forName("com.mysql.jdbc.Driver"); final String URL =
-			 * "jdbc:mysql://192.168.0.42/spoty?user=alumno&password=alumno"; con =
-			 * DriverManager.getConnection(URL);
-			 */
 
 			pst.setString(1, "%" + search + "%");
 			try (ResultSet rs = pst.executeQuery();) {
 				while (rs.next()) {
-					m = mapper(rs);
-					lista.add(m);
-				}
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return lista;
-	}
-
-	public ArrayList<Material> getAllByUser(String search, Usuario user) {
-
-		ArrayList<Material> lista = new ArrayList<Material>();
-
-		// Necesario para utilizar la función mapper
-		Material m = null;
-
-		String sql = "SELECT m.id, m.nombre, m.precio, m.id_usuario, u.nombre as nombre_usuario "
-				+ "FROM material m, usuario u " + "WHERE u.id = m.id_usuario " + "AND m.nombre LIKE ? "
-				+ "AND m.id_usuario LIKE ? " + "ORDER BY ID DESC  LIMIT 500";
-
-		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
-
-			/*
-			 * Esto utilizabamos al usar el DriverManager
-			 * 
-			 * Class.forName("com.mysql.jdbc.Driver"); final String URL =
-			 * "jdbc:mysql://192.168.0.42/spoty?user=alumno&password=alumno"; con =
-			 * DriverManager.getConnection(URL);
-			 */
-
-			pst.setString(1, "%" + search + "%");
-			pst.setInt(2, user.getRol().getId());
-			try (ResultSet rs = pst.executeQuery();) {
-				while (rs.next()) {
-					m = mapper(rs);
-					lista.add(m);
+					rol = mapper(rs);
+					lista.add(rol);
 				}
 			}
 
@@ -115,20 +65,18 @@ public class MaterialDAO implements Persistible<Material> {
 	}
 
 	/**
-	 * Devuelvo el material con el id indicado
+	 * Devuelvo el Usuario con el nombreindicado
 	 */
-	@Override
-	public Material getById(int id) {
+	public Rol getByNombre(String nombre, String password) {
 
-		Material m = null;
-
-		String sql = "SELECT m.id, m.nombre, m.precio, m.id_usuario, u.nombre as nombre_usuario "
-				+ "FROM material m, usuario u WHERE m.id_usuario = u.id " + "AND m.id = ? ";
+		Rol rol = null;
+		String sql = "SELECT id, nombre, id_rol FROM usuario WHERE nombre= ? and password = ?;";
 
 		// Ahora utilizaremos esto, por el pool de conexiones DATASOURCE
 		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
 
-			pst.setInt(1, id);
+			pst.setString(1, nombre);
+			pst.setString(2, password);
 
 			try (ResultSet rs = pst.executeQuery()) {
 				// Necesario aunque solo sea un valor
@@ -139,7 +87,7 @@ public class MaterialDAO implements Persistible<Material> {
 					 */
 
 					// mapper convierte unresultado de la BD a un objeto Material
-					m = mapper(rs);
+					rol = mapper(rs);
 				}
 			}
 		} catch (Exception e) {
@@ -157,11 +105,55 @@ public class MaterialDAO implements Persistible<Material> {
 			 * e.printStackTrace(); }
 			 */
 		}
-		return m;
+		return rol;
+	}
+
+	/**
+	 * Devuelvo el rol con el id indicado
+	 */
+	@Override
+	public Rol getById(int id) {
+
+		Rol rol = null;
+		String sql = "SELECT id, nombre FROM rol WHERE id= ? ;";
+
+		// Ahora utilizaremos esto, por el pool de conexiones DATASOURCE
+		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
+
+			pst.setInt(1, id);
+
+			try (ResultSet rs = pst.executeQuery()) {
+				// Necesario aunque solo sea un valor
+				while (rs.next()) {
+					/*
+					 * m = new Material(); m.setId(rs.getInt("id"));
+					 * m.setNombre(rs.getString("nombre")); m.setPrecio(rs.getFloat("precio"));
+					 */
+
+					// mapper convierte unresultado de la BD a un objeto Material
+					rol = mapper(rs);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			// Antes de utilizar los Autoclosables había que cerrar los recursos en el
+			// Ya no es necesario el finally si es solo para esto, podría quitarse
+
+			/*
+			 * try { if (rs != null) { rs.close(); }
+			 * 
+			 * if (pst != null) { pst.close(); }
+			 * 
+			 * if (con != null) { con.close(); } } catch (SQLException e) {
+			 * e.printStackTrace(); }
+			 */
+		}
+		return rol;
 	}
 
 	@Override
-	public boolean save(Material pojo) throws MySQLIntegrityConstraintViolationException {
+	public boolean save(Rol pojo) throws MySQLIntegrityConstraintViolationException {
 		boolean resul = false;
 		String sql = "";
 
@@ -171,9 +163,9 @@ public class MaterialDAO implements Persistible<Material> {
 		// Dependiendo de si quiero guardar un registro nuevo o modificar uno
 		// existente, la SQL será distinta
 		if (pojo.getId() == -1) { // Es un nuevo registro
-			sql = "INSERT INTO `material` (`nombre`,`precio`,`id_usuario`) VALUES(?,?,?);";
+			sql = "INSERT INTO `rol` (`nombre`) VALUES(?);";
 		} else {
-			sql = "UPDATE `material`  SET `nombre` = ?, `precio`= ?, `id_usuario` = ? WHERE  `id`= ?;";
+			sql = "UPDATE `rol`  SET `nombre` = ? WHERE  `id`= ?;";
 		}
 
 		try (Connection con = ConnectionManager.getConnection();
@@ -181,15 +173,11 @@ public class MaterialDAO implements Persistible<Material> {
 
 			if (pojo.getId() == -1) { // Es un nuevo registro
 				pst.setString(1, pojo.getNombre());
-				pst.setFloat(2, pojo.getPrecio());
-				pst.setInt(3, pojo.getUser().getId());
 				System.out.println("Insertando");
 
 			} else { // Es una modificación
 				pst.setString(1, pojo.getNombre());
-				pst.setFloat(2, pojo.getPrecio());
-				pst.setInt(3, pojo.getUser().getId());
-				pst.setInt(4, pojo.getId());
+				pst.setInt(2, pojo.getId());
 				System.out.println("Modificando");
 			}
 
@@ -224,7 +212,7 @@ public class MaterialDAO implements Persistible<Material> {
 	@Override
 	public boolean delete(int id) {
 		boolean resul = false;
-		String sql = "DELETE FROM `material` WHERE  `id`= ?;";
+		String sql = "DELETE FROM `rol` WHERE  `id`= ?;";
 
 		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
 
@@ -243,46 +231,15 @@ public class MaterialDAO implements Persistible<Material> {
 	}
 
 	@Override
-	public Material mapper(ResultSet rs) throws SQLException {
-		Material m = null;
+	public Rol mapper(ResultSet rs) throws SQLException {
+		Rol us = null;
 		if (rs != null) {
-			m = new Material();
-			m.setId(rs.getInt("id"));
-			m.setNombre(rs.getString("nombre"));
-			m.setPrecio(rs.getFloat("precio"));
-
-			// Tengo que pasar un Usuario con el id de la base de datos
-			// El siguiente código no es buena practica
-			// daoUsuario = UsuarioDAO.getInstance();
-			// m.setUser(daoUsuario.getById(rs.getInt("id_usuario")));
-
-			Usuario user = new Usuario(rs.getInt("id_usuario"), rs.getString("nombre_usuario"));
-
-			m.setUser(user);
+			us = new Rol();
+			us.setId(rs.getInt("id"));
+			us.setNombre(rs.getString("nombre"));
 
 		}
-		return m;
+		return us;
 	}
 
-	// NO HA TERMINADO DE FUNCIONAR DE ESTA FORMA
-	public int lastId() {
-		int resul = -1;
-		String sql = "SELECT LAST_INSERT_ID()";
-
-		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
-
-			try (ResultSet rs = pst.executeQuery()) {
-				while (rs.next()) {
-
-					resul = rs.getInt("id");
-
-					System.out.println(resul);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return resul;
-	}
 }
