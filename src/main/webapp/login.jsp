@@ -9,7 +9,7 @@
       <div class="form-label-group">
         <input type="text" class="form-control"
                name="usuario" 
-               value="pepe"
+               value="administrador"
                placeholder="Nombre Usuario" 
                required>
                

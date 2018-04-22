@@ -24,7 +24,8 @@
 
       <c:if test="${!empty usuario && usuario.rol.id == 1}">
       <a class="p-2 text-dark" href="backoffice/materiales?op=0">Materiales</a>
-      <a class="p-2 text-dark" href="backoffice/roles?op=0">Roles</a>      
+      <a class="p-2 text-dark" href="backoffice/roles?op=0">Roles</a>
+      <a class="p-2 text-dark" href="backoffice/usuarios?op=0">Usuarios</a>        
       </c:if>
       
        <c:if test="${!empty usuario && usuario.rol.id == 2}">
