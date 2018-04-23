@@ -8,33 +8,33 @@
       <nav class="my-2 my-md-0 mr-md-10">
         <a class="p-2 text-dark" href="generar-mesa">Mesa</a>        
         <a class="p-2 text-dark" href="calculadora"> Calculadora</a> 
-        	<c:if test="${empty usuario}"> 
+        	<c:if test="${empty sessionScope.usuario}"> 
         		<a class="p-2 text-dark" href="materiales"> Materiales</a>
          	</c:if>      
       </nav>
       
       <nav style="margin-left: auto">
-      <c:if test="${empty usuario}">    
+      <c:if test="${empty sessionScope.usuario}">    
       <a class="btn btn-outline-success" href="login-user">Login User</a>
       </c:if>
-      <c:if test="${empty usuario}">         
+      <c:if test="${empty sessionScope.usuario}">         
       	<a class="btn btn-outline-primary" href="login">Login</a>      	
       </c:if>
      
 
-      <c:if test="${!empty usuario && usuario.rol.id == 1}">
+      <c:if test="${!empty sessionScope.usuario && sessionScope.usuario.rol.id == 1}">
       <a class="p-2 text-dark" href="backoffice/materiales?op=0">Materiales</a>
       <a class="p-2 text-dark" href="backoffice/roles?op=0">Roles</a>
       <a class="p-2 text-dark" href="backoffice/usuarios?op=0">Usuarios</a>        
       </c:if>
       
-       <c:if test="${!empty usuario && usuario.rol.id == 2}">
+       <c:if test="${!empty sessionScope.usuario && sessionScope.usuario.rol.id == 2}">
       <a class="p-2 text-dark" href="frontoffice/materiales">Mis Materiales</a>
             
       </c:if>
       
-      <c:if test="${!empty usuario}">      
-      <span class="badge badge-success">${usuario.nombre} </span>
+      <c:if test="${!empty sessionScope.usuario}">      
+      <span class="badge badge-success">${sessionScope.usuario.nombre} </span>
       <a class="btn btn-outline-danger" href="logout">Logout</a>           
       </c:if>
       </nav>

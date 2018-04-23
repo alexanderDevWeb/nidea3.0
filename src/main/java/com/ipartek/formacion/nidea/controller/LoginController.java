@@ -35,7 +35,7 @@ public class LoginController extends HttpServlet {
 	private static final String FRONTOFFICE = "views/materiales/index.jsp";
 	private static final String LOGIN = "login.jsp";
 
-	private static final int SESSION_EXPIRATION = 60 * 60;
+	// private static final int SESSION_EXPIRATION = 60 * 60;
 
 	// Creamos el atributo UsuarioDAO y el método init()
 	// para que solo se cree el dao en la primera llamada al servlet,
@@ -97,7 +97,7 @@ public class LoginController extends HttpServlet {
 				// Guardar usuario en session
 				HttpSession session = request.getSession();
 				session.setAttribute("usuario", user);
-				session.setMaxInactiveInterval(SESSION_EXPIRATION);
+				// session.setMaxInactiveInterval(SESSION_EXPIRATION);
 
 				// Recojo todos los usuarios en contexto de palicación
 				// desde que se enciende el servidor hasta que se apaga

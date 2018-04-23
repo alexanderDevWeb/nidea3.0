@@ -11,34 +11,33 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ipartek.formacion.nidea.model.MaterialDAO;
-import com.ipartek.formacion.nidea.model.UsuarioDAO;
 import com.ipartek.formacion.nidea.pojo.Alert;
 import com.ipartek.formacion.nidea.pojo.Material;
 import com.ipartek.formacion.nidea.pojo.Usuario;
+import com.ipartek.nidea.ejemplos.Operable;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 /**
  * Servlet implementation class MaterialesUserController
  */
 @WebServlet("/frontoffice/materiales")
-public class MaterialesUserController extends HttpServlet {
+public class MaterialesUserController extends HttpServlet implements Operable {
 	private static final long serialVersionUID = 1L;
 
 	// Definimos las vistas a las que puede ir
 	private static final String VIEW_INDEX = "/frontoffice/materiales/index.jsp";
 	private static final String VIEW_FORM = "/frontoffice/formUser.jsp";
 
-	public static final int OP_MOSTRAR_FORMULARIO = 1;
-	public static final int OP_BUSQUEDA = 2;
-	public static final int OP_ELIMINAR = 3;
-	public static final int OP_GUARDAR = 4;
+	// public static final int OP_MOSTRAR_FORMULARIO = 1;
+	// public static final int OP_BUSQUEDA = 2;
+	// public static final int OP_ELIMINAR = 3;
+	// public static final int OP_GUARDAR = 4;
 
 	private RequestDispatcher dispatcher;
 	private Alert alert;
 
 	// DAOs para operaciones en la BD
 	private MaterialDAO daoMaterial;
-	private UsuarioDAO daoUsuario;
 
 	// parametros comunes
 	private String search; // Buscador por nombre
@@ -55,7 +54,7 @@ public class MaterialesUserController extends HttpServlet {
 
 		super.init(config);
 		daoMaterial = MaterialDAO.getInstance();
-		daoUsuario = UsuarioDAO.getInstance();
+
 	}
 
 	// Se ejecuta cuando paramos el servidor de aplicaciones
@@ -64,7 +63,7 @@ public class MaterialesUserController extends HttpServlet {
 
 		super.destroy();
 		daoMaterial = null;
-		daoUsuario = null;
+
 	}
 
 	// Para realizar operaciones antes o después de ejecutar doGet o do Post
@@ -134,7 +133,7 @@ public class MaterialesUserController extends HttpServlet {
 			}
 
 		} catch (Exception e) {
-			// TODO: handle exception
+
 			e.printStackTrace();
 		} finally {
 			request.setAttribute("alert", alert);
@@ -229,7 +228,7 @@ public class MaterialesUserController extends HttpServlet {
 						alert = new Alert("Error Guardando, sentimos las molestias ", Alert.TIPO_WARNING);
 					}
 				} catch (MySQLIntegrityConstraintViolationException e) {
-					// TODO Auto-generated catch block
+
 					e.printStackTrace();
 					alert = new Alert("Error Guardando, EL MATERIAL YA EXISTE ", Alert.TIPO_DANGER);
 				}
@@ -278,10 +277,12 @@ public class MaterialesUserController extends HttpServlet {
 	}
 
 	private void eliminar(HttpServletRequest request) {
-		// TODO Auto-generated method stub
+
 		System.out.println("Eliminando.....");
 
-		if (daoMaterial.delete(id)) {
+		Usuario userSession = (Usuario) request.getSession().getAttribute("usuario");
+
+		if (daoMaterial.deleteChecked(id, userSession)) {
 			alert = new Alert("Material Eliminado con id: " + id, Alert.TIPO_PRIMARY);
 		} else {
 			alert = new Alert("Error Eliminando, sentimos las molestias ", Alert.TIPO_WARNING);

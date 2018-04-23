@@ -2,7 +2,7 @@
 <%@include file="/templates/navbar.jsp" %>
 <%@include file="/templates/alert.jsp" %>
 
-${applicationScope.usuarios_conectados}
+<%-- ${applicationScope.usuarios_conectados} --%>
 
 <a class="text-center" style="display:block" href="backoffice/materiales">Materiales listado backoffice</a>
 
@@ -16,7 +16,7 @@ ${applicationScope.usuarios_conectados}
         </tr>
     </thead>
     <tbody>
-    <c:forEach items="${usuarios_conectados}" var="usuario">>
+    <c:forEach items="${usuarios_conectados}" var="usuario">
         <tr>
              <td>${usuario.key}</td>
 <%--             <td>${usuario.getValue().getNombre()}</td> --%>

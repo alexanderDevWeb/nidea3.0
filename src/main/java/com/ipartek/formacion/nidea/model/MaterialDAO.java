@@ -15,9 +15,6 @@ public class MaterialDAO implements Persistible<Material> {
 
 	private static MaterialDAO INSTANCE = null;
 
-	// Lo necesito en el mapper para crear objetos Usuario
-	private UsuarioDAO daoUsuario;
-
 	// Private constructor para que no sepueda hacer new y crear N instancias
 	private MaterialDAO() {
 	}
@@ -100,7 +97,7 @@ public class MaterialDAO implements Persistible<Material> {
 			 */
 
 			pst.setString(1, "%" + search + "%");
-			pst.setInt(2, user.getRol().getId());
+			pst.setInt(2, user.getId());
 			try (ResultSet rs = pst.executeQuery();) {
 				while (rs.next()) {
 					m = mapper(rs);
@@ -221,14 +218,14 @@ public class MaterialDAO implements Persistible<Material> {
 		return resul;
 	}
 
-	@Override
-	public boolean delete(int id) {
+	public boolean deleteChecked(int id, Usuario user) {
 		boolean resul = false;
-		String sql = "DELETE FROM `material` WHERE  `id`= ?;";
+		String sql = "DELETE FROM `material` WHERE  `id`= ? AND `id_usuario` = ?";
 
 		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
 
 			pst.setInt(1, id);
+			pst.setInt(2, user.getId());
 
 			int affectedRows = pst.executeUpdate();
 
@@ -283,6 +280,27 @@ public class MaterialDAO implements Persistible<Material> {
 			e.printStackTrace();
 		}
 
+		return resul;
+	}
+
+	@Override
+	public boolean delete(int id) {
+		boolean resul = false;
+		String sql = "DELETE FROM `material` WHERE  `id`= ?;";
+
+		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
+
+			pst.setInt(1, id);
+
+			int affectedRows = pst.executeUpdate();
+
+			if (affectedRows == 1) {
+				resul = true;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return resul;
 	}
 }

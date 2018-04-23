@@ -4,8 +4,10 @@
 
 <h1  class="text-center">FORM CRUD</h1>
 
-<p>${roles}</p>
-<p>${usuario}</p>
+<%-- <h3  class="text-center">Opción: ${op}</h3> --%>
+
+<%-- <p>${roles}</p> --%>
+<%-- <p>${usuario}</p> --%>
 
 <div id="formCRUD" class="mb-3">
 
@@ -37,14 +39,14 @@
     <label for="password">Rol</label>
 	<select name="idRol"  class="form-control">	
 	<c:forEach items="${roles}" var="rol">      
-		<option value="${rol.id}" ${rol.id == user.rol.id? "selected" :"" }>${rol.nombre}</option>	
+		<option value="${rol.id}" ${rol.id == usuario.rol.id? "selected" :"" }>${rol.nombre}</option>	
 	</c:forEach>
 	</select>
 	      
       <br>
      
      <c:choose>        
-         <c:when test="${rol.id == -1}">
+         <c:when test="${usuario.id == -1}">
          	<button class="btn btn-lg btn-primary btn-block" name="op" value="4" type="submit">Crear</button>
          </c:when>
          <c:otherwise>

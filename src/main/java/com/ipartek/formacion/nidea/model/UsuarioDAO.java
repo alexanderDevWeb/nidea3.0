@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import com.ipartek.formacion.nidea.pojo.Rol;
 import com.ipartek.formacion.nidea.pojo.Usuario;
+import com.ipartek.nidea.util.Utilidades;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 public class UsuarioDAO implements Persistible<Usuario> {
@@ -236,6 +237,66 @@ public class UsuarioDAO implements Persistible<Usuario> {
 	 * return resul;
 	 * }
 	 */
+
+	@Override
+	public boolean save(Usuario pojo) throws MySQLIntegrityConstraintViolationException {
+		boolean resul = false;
+		String sql = "";
+
+		// Formateo el nombre para quitarle los espacios
+		pojo.setNombre(Utilidades.limpiarEspacios(pojo.getNombre()));
+
+		// Dependiendo de si quiero guardar un registro nuevo o modificar uno
+		// existente, la SQL será distinta
+		if (pojo.getId() == -1) { // Es un nuevo registro
+			sql = "INSERT INTO `usuario` (`nombre`, `password`, `id_rol`) VALUES(?,'',?);";
+		} else {
+			sql = "UPDATE `usuario`  SET `nombre` = ?,  `id_rol` = ? WHERE  `id`= ?;";
+		}
+
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+			if (pojo.getId() == -1) { // Es un nuevo registro
+				pst.setString(1, pojo.getNombre());
+				pst.setInt(2, pojo.getRol().getId());
+				System.out.println("Insertando");
+
+			} else { // Es una modificación
+				pst.setString(1, pojo.getNombre());
+				pst.setInt(2, pojo.getRol().getId());
+				pst.setInt(3, pojo.getId());
+				System.out.println("Modificando");
+			}
+
+			int affectedRows = pst.executeUpdate();
+
+			if (affectedRows == 1) {
+				resul = true;
+			}
+
+			// Recuperar ID generado de forma automática
+			try (ResultSet rs = pst.getGeneratedKeys()) {
+				while (rs.next()) {
+					pojo.setId(rs.getInt(1));
+					System.out.println("Ultimo registro: " + rs.getInt(1));
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		catch (MySQLIntegrityConstraintViolationException e) {
+			// e.printStackTrace();
+			System.out.println("Primer throws de Unique exception");
+			throw e;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return resul;
+	}
+
 	@Override
 	public Usuario mapper(ResultSet rs) throws SQLException {
 		Usuario us = null;
@@ -250,15 +311,24 @@ public class UsuarioDAO implements Persistible<Usuario> {
 	}
 
 	@Override
-	public boolean save(Usuario pojo) throws MySQLIntegrityConstraintViolationException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public boolean delete(int id) {
-		// TODO Auto-generated method stub
-		return false;
+		boolean resul = false;
+		String sql = "DELETE FROM `usuario` WHERE  `id`= ?;";
+
+		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
+
+			pst.setInt(1, id);
+
+			int affectedRows = pst.executeUpdate();
+
+			if (affectedRows == 1) {
+				resul = true;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return resul;
 	}
 
 }
