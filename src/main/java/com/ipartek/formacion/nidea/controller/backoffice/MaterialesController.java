@@ -148,33 +148,6 @@ public class MaterialesController extends HttpServlet {
 			request.setAttribute("alert", alert);
 			dispatcher.forward(request, response);
 		}
-		/*
-		 * String view = ""; Material mat = new Material();
-		 * 
-		 * String search = request.getParameter("search"); // Si llega a null hay que
-		 * cambiar a "" para que la consulta no pegue error en // MaterialDAO ->
-		 * getAll() if (search == null) { search = ""; }
-		 * 
-		 * String op = request.getParameter("op"); System.out.println("OP: " + op);
-		 * 
-		 * if (op != null) { view = VIEW_FORM; request.setAttribute("op", op);
-		 * 
-		 * // Dependiendo de la opción, debo hacer una operación u otra switch (op) { //
-		 * Crear un nuevo material case "1": request.setAttribute("material", mat);
-		 * break; // Modificar material case "2": break; // Eliminar material case "3":
-		 * break; }
-		 * 
-		 * } else { view = VIEW_INDEX;
-		 * 
-		 * // Configuro los atributos request.setAttribute("materiales",
-		 * dao.getAll(search)); request.setAttribute("search", search); }
-		 * 
-		 * System.out.println(search);
-		 * 
-		 * // Nos llaman a traves de un enlace, peticion GET // Envío a la vista
-		 * correspondiente (formulario o materiales)
-		 * request.getRequestDispatcher(view).forward(request, response);
-		 */
 
 	}
 
@@ -212,16 +185,15 @@ public class MaterialesController extends HttpServlet {
 		System.out.println("User: " + request.getParameter("idUsuario"));
 		user = new Usuario();
 		if (request.getParameter("idUsuario") != null) {
-			// user = Integer.parseInt(request.getParameter("idUsuario"));
-			user = daoUsuario.getById(Integer.parseInt(request.getParameter("idUsuario")));
+			int idUser = Integer.parseInt(request.getParameter("idUsuario"));
 
+			// Si he seleccionado nuevo usuario lo asigno
+			if (request.getParameter("sUsuarios") != null && request.getParameter("sUsuarios") != "") {
+				int idUserNuevo = Integer.parseInt(request.getParameter("sUsuarios"));
+				idUser = idUserNuevo;
+			}
+			user = daoUsuario.getById(idUser);
 		}
-		/*
-		 * Se hace en guardar para manejar la excepción if
-		 * (request.getParameter("precio") != null && request.getParameter("precio") !=
-		 * "") { precio = Float.parseFloat(request.getParameter("precio")); } else {
-		 * precio = 0.00f; }
-		 */
 
 	}
 
@@ -355,7 +327,9 @@ public class MaterialesController extends HttpServlet {
 			alert = new Alert("Creando nuevo material", Alert.TIPO_PRIMARY);
 		}
 
-		request.setAttribute("usuarios", daoUsuario.getAll(""));
+		// Ya no hace falta por el servicio AJAX
+		// request.setAttribute("usuarios", daoUsuario.getAll(""));
+
 		request.setAttribute("material", mat);
 
 		// Preparo el dispatcher para el forward

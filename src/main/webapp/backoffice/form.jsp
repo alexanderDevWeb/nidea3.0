@@ -45,14 +45,42 @@
                value="${material.precio}">
       </div>
       
-    <label for="password">Usuario</label>
-	<select name="idUsuario"  class="form-control">	
-	<c:forEach items="${usuarios}" var="usuario">      
-		<option value="${usuario.id}" ${usuario.id == material.user.id? "selected" :"" }>${usuario.nombre}</option>	
-	</c:forEach>
-	</select>
+      
+      
+<!--     <label for="password">Usuario</label> -->
+<!-- 	<select name="idUsuario"  class="form-control">	 -->
+<%-- 	<c:forEach items="${usuarios}" var="usuario">       --%>
+<%-- 		<option value="${usuario.id}" ${usuario.id == material.user.id? "selected" :"" }>${usuario.nombre}</option>	 --%>
+<%-- 	</c:forEach> --%>
+<!-- 	</select> -->
 	      
-      <br>
+      
+      
+      <div class="form-label-group mb-3">
+		<label for="">Usuario</label>
+        <input type="text"                
+               class="form-control" 
+               placeholder=""
+               value="${material.user.nombre}"
+               readonly>
+               <input type="hidden" name="idUsuario" value="${material.user.id}">
+       </div>
+       
+      <div class="form-label-group mb-3">         
+     	<label for="search">Cambiar Usuario</label>
+        <input type="search"			    
+               name="search"
+               id="search" 
+               class="form-control"               
+               onkeyup="buscarUsuario(event)">          
+		</div>
+		
+		<label for="password">Usuario Nuevo</label>
+		<select id="sUsuarios" name="sUsuarios"  class="form-control">		   
+			<option value="" >No hay datos....</option>	
+		</select>
+		
+		<br>
      
      <c:choose>        
          <c:when test="${material.id == -1}">
@@ -62,9 +90,11 @@
          	<button class="btn btn-lg btn-warning btn-block" name="op" value="4" type="submit">Modificar</button>
          	<button id="del" class="btn btn-lg btn-danger btn-block" name="op" value="3" type="submit" data-toggle="modal" data-target="#exampleModal">Eliminar</button>
          </c:otherwise>      
-     </c:choose>     
+     </c:choose>   	
         
-    </form>
+    </form>    
+    
+       
     
     <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -90,6 +120,7 @@
 </div>
 
 <%@include file="/templates/footer.jsp" %>
+<script src="js/buscarUsuario.js"></script> 
 <script>
 var enviar = false;
 

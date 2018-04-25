@@ -4,6 +4,7 @@ public class Usuario {
 
 	private int id;
 	private String nombre;
+	private String password;
 	private Rol rol;
 
 	public Usuario() {
@@ -43,9 +44,12 @@ public class Usuario {
 		this.rol = rol;
 	}
 
-	@Override
-	public String toString() {
-		return "Usuario [id=" + id + ", nombre=" + nombre + ", rol=" + rol.toString() + "]";
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 }

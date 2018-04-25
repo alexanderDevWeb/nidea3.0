@@ -1,4 +1,3 @@
-
 	<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
 	  
 	  <a href="index.jsp">
@@ -11,15 +10,14 @@
         	<c:if test="${empty sessionScope.usuario}"> 
         		<a class="p-2 text-dark" href="materiales"> Materiales</a>
          	</c:if>      
-      </nav>
+      </nav> 
       
       <nav style="margin-left: auto">
-      <c:if test="${empty sessionScope.usuario}">    
-      <a class="btn btn-outline-success" href="login-user">Login User</a>
-      </c:if>
-      <c:if test="${empty sessionScope.usuario}">         
+      <c:if test="${empty sessionScope.usuario}"> 
+      <a class="btn btn-outline-danger" href="registro">Registro</a>
+      	<a class="btn btn-outline-success" href="login-user">Login User</a>
       	<a class="btn btn-outline-primary" href="login">Login</a>      	
-      </c:if>
+      </c:if> 
      
 
       <c:if test="${!empty sessionScope.usuario && sessionScope.usuario.rol.id == 1}">
@@ -42,5 +40,4 @@
       
       
     </div>
-    
-    <div class="container">
+ <div class="container">

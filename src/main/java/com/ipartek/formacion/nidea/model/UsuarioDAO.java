@@ -65,6 +65,36 @@ public class UsuarioDAO implements Persistible<Usuario> {
 		return lista;
 	}
 
+	// Para la API
+	public ArrayList<Usuario> getAllByName(String search) {
+
+		ArrayList<Usuario> lista = new ArrayList<Usuario>();
+
+		// Necesario para utilizar la función mapper
+		Usuario us = null;
+
+		// String sql = "SELECT id, nombre, id_rol FROM usuario WHERE NOMBRE LIKE ? ORDER BY ID DESC LIMIT 500";
+		// String sql = "SELECT u.id, u.nombre, id_rol, r.nombre as rol FROM usuario u, rol r WHERE id_rol = r.id";
+
+		String sql = "SELECT u.id, u.nombre, id_rol, r.nombre as rol  ";
+		sql += "FROM usuario u, rol r WHERE id_rol = r.id AND ";
+		sql += "u.nombre LIKE ? ORDER BY u.id DESC LIMIT 500";
+
+		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
+			pst.setString(1, "%" + search + "%");
+			try (ResultSet rs = pst.executeQuery();) {
+				while (rs.next()) {
+					us = mapper(rs);
+					lista.add(us);
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return lista;
+	}
+
 	/**
 	 * Devuelvo el Usuario con el nombreindicado
 	 */
@@ -325,6 +355,64 @@ public class UsuarioDAO implements Persistible<Usuario> {
 				resul = true;
 			}
 
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return resul;
+	}
+
+	public ArrayList<Usuario> checkNameRegistro(String nombre) {
+
+		ArrayList<Usuario> lista = new ArrayList<Usuario>();
+
+		// Necesario para utilizar la función mapper
+		Usuario us = null;
+
+		String sql = "SELECT u.id, u.nombre, id_rol, r.nombre as rol  ";
+		sql += "FROM usuario u, rol r WHERE id_rol = r.id AND ";
+		sql += "u.nombre = ? ORDER BY u.id DESC LIMIT 500";
+
+		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
+			pst.setString(1, nombre);
+			try (ResultSet rs = pst.executeQuery();) {
+				while (rs.next()) {
+					us = mapper(rs);
+					lista.add(us);
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return lista;
+	}
+
+	public boolean registrar(Usuario pojo) throws MySQLIntegrityConstraintViolationException {
+		boolean resul = false;
+		String sql = "";
+
+		// Formateo el nombre para quitarle los espacios
+		pojo.setNombre(Utilidades.limpiarEspacios(pojo.getNombre()));
+
+		sql = "INSERT INTO `usuario` (`nombre`, `password`, `email`, `id_rol`) VALUES(?, ?, ? ,?);";
+
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+			pst.setString(1, pojo.getNombre());
+			pst.setString(2, pojo.getPassword());
+			pst.setString(3, pojo.getNombre() + "@" + pojo.getNombre() + ".com");
+			pst.setInt(4, 2);
+			System.out.println("Insertando");
+
+			int affectedRows = pst.executeUpdate();
+
+			if (affectedRows == 1) {
+				resul = true;
+			}
+		} catch (MySQLIntegrityConstraintViolationException e) {
+			e.printStackTrace();
+			System.out.println("Registro repetido aunque está controlado");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
