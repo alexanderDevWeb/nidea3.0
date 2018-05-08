@@ -61,4 +61,5 @@
 
 </div>
 <%@include file="templates/footer.jsp" %>
+<script src="js/ajax.js"></script>
 <script src="js/registro.js"></script>
