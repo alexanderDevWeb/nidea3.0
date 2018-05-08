@@ -17,8 +17,21 @@
                value="${user.nombre}"
                placeholder="Introduzca nombre de Usuario"
                autofocus 
-               required>            
+               required> 
+               <p id="msgNombre" class="text-danger"></p>               
         
+      </div>
+      
+      <div class="form-label-group mb-2">
+<!--       	<label for="usuario">Nombre Usuario</label> -->
+        <input type="text" class="form-control"
+        	   id="email"
+               name="email"
+               value="${user.email}"
+               placeholder="Introduzca email de Usuario"
+               autofocus 
+               required>
+               <p id="msgEmail" class="text-danger"></p>     
       </div>
 
       <div class="form-label-group mb-2">

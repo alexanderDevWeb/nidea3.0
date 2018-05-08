@@ -34,25 +34,38 @@ public class ApiRegistroController extends HttpServlet {
 
 		PrintWriter out = response.getWriter();
 
-		// Recoger parametro nombre.
+		// Recoger parametros nombre e email.
 		// Comprobar si ya existe el usuario en la BD
 		// Devolver true or false
 		String nombre = request.getParameter("nombre");
-		if (nombre == null) {
-			nombre = "desconocido";
-		}
+		String email = request.getParameter("email");
 
-		ArrayList<Usuario> usuarios = dao.checkNameRegistro(nombre);
-		// En vez de like ponerlo = para que sea exacto
+		if (nombre != null) { // Hay que comprobar el nombre
+			ArrayList<Usuario> usuarios = dao.checkNameRegistro(nombre);
+			// En vez de like ponerlo = para que sea exacto
 
-		if (usuarios.size() == 0) {
-			response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-			out.print("Usuario Libre");
-		} else {
-			// Por defecto siempre retorna 200 = SC_OK
-			out.print("Usuario Existente");
+			if (usuarios.size() == 0) {
+				out.print("Usuario Libre");
+				response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+			} else {
+				// Por defecto siempre retorna 200 = SC_OK
+				out.print("Usuario Existente");
+			}
+
+		} else if (email != null) { // Si hay que comporobar que exista el email
+			ArrayList<Usuario> usuarios = dao.checkEmailRegistro(email);
+			// En vez de like ponerlo = para que sea exacto
+
+			if (usuarios.size() == 0) {
+				response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+				out.print("Email Libre");
+			} else {
+				// Por defecto siempre retorna 200 = SC_OK
+				out.print("Email Existente");
+			}
 		}
 		out.flush();
+
 	}
 
 }

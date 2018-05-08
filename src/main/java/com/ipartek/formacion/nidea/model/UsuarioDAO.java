@@ -387,6 +387,32 @@ public class UsuarioDAO implements Persistible<Usuario> {
 		return lista;
 	}
 
+	public ArrayList<Usuario> checkEmailRegistro(String email) {
+
+		ArrayList<Usuario> lista = new ArrayList<Usuario>();
+
+		// Necesario para utilizar la función mapper
+		Usuario us = null;
+
+		String sql = "SELECT u.id, u.nombre, id_rol, r.nombre as rol  ";
+		sql += "FROM usuario u, rol r WHERE id_rol = r.id AND ";
+		sql += "u.email = ? ORDER BY u.id DESC LIMIT 500";
+
+		try (Connection con = ConnectionManager.getConnection(); PreparedStatement pst = con.prepareStatement(sql);) {
+			pst.setString(1, email);
+			try (ResultSet rs = pst.executeQuery();) {
+				while (rs.next()) {
+					us = mapper(rs);
+					lista.add(us);
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return lista;
+	}
+
 	public boolean registrar(Usuario pojo) throws MySQLIntegrityConstraintViolationException {
 		boolean resul = false;
 		String sql = "";
