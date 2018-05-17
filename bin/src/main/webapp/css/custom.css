@@ -1,0 +1,24 @@
+.logo{
+	width: 150px;
+	height: auto;
+}
+
+.prize{
+	font-size: 2em;
+}
+
+svg{
+	display:block;
+	margin: auto;
+}
+
+/* login
+*****************************************/
+#login, #loginUser{
+	padding-top: 5em;
+}
+
+#login form, #loginUser form{
+	width: 500px;
+	margin: auto;
+}
